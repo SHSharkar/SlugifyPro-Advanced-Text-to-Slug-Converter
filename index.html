@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SlugifyPro: Advanced Text to Slug Converter with Separator and Case Options</title>
+    <meta name="description"
+        content="SlugifyPro is a comprehensive tool designed for generating slugs with advanced customization options. Easily choose your separator—hyphen, underscore, or dot—and set the case to either lowercase or as-is to meet your specific requirements.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/slugify@1.6.6/slugify.min.js"></script>
+</head>
+
+<body class="p-4 flex items-center justify-center min-h-screen bg-gray-100">
+    <div x-data="app()" class="space-y-4 bg-white p-6 rounded shadow-md max-w-xl w-full">
+        <textarea x-model="input" placeholder="Input Text"
+            class="block w-full rounded border p-2 text-gray-900 shadow-sm placeholder:text-gray-500 sm:text-sm sm:leading-6 h-28"></textarea>
+        <fieldset class="mt-4">
+            <legend class="sr-only">Separator</legend>
+            <div class="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
+                <div class="flex items-center">
+                    <input id="separatorHyphen" x-model="separator" type="radio" value="-" checked
+                        class="h-4 w-4 border-gray-300 text-green-600 focus:ring-green-600">
+                    <label for="separatorHyphen"
+                        class="ml-3 block text-sm font-medium leading-6 text-gray-900">Hyphen</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="separatorUnderscore" x-model="separator" type="radio" value="_"
+                        class="h-4 w-4 border-gray-300 text-green-600 focus:ring-green-600">
+                    <label for="separatorUnderscore"
+                        class="ml-3 block text-sm font-medium leading-6 text-gray-900">Underscore</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="separatorDot" x-model="separator" type="radio" value="."
+                        class="h-4 w-4 border-gray-300 text-green-600 focus:ring-green-600">
+                    <label for="separatorDot" class="ml-3 block text-sm font-medium leading-6 text-gray-900">Dot</label>
+                </div>
+            </div>
+        </fieldset>
+        <fieldset class="mt-4">
+            <legend class="sr-only">Case</legend>
+            <div class="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
+                <div class="flex items-center">
+                    <input id="caseLower" x-model="caseType" type="radio" value="lower" checked
+                        class="h-4 w-4 border-gray-300 text-green-600 focus:ring-green-600">
+                    <label for="caseLower"
+                        class="ml-3 block text-sm font-medium leading-6 text-gray-900">Lowercase</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="caseAsIs" x-model="caseType" type="radio" value="asis"
+                        class="h-4 w-4 border-gray-300 text-green-600 focus:ring-green-600">
+                    <label for="caseAsIs" class="ml-3 block text-sm font-medium leading-6 text-gray-900">As-is</label>
+                </div>
+            </div>
+        </fieldset>
+        <div>
+            <textarea @click="copyToClipboard(customSlugify(input))" x-text="customSlugify(input)"
+                class="block w-full rounded border p-2 text-gray-900 shadow-sm placeholder:text-gray-500 sm:text-sm sm:leading-6 bg-gray-100 h-28"
+                placeholder="Output Slug" readonly></textarea>
+            <button @click="copyToClipboard(customSlugify(input))" x-bind:disabled="isCopyDisabled"
+                x-bind:class="{'bg-gray-500': isCopyDisabled, 'bg-green-500': !isCopyDisabled}"
+                class="p-2 text-white rounded w-full mt-2 text-sm">Copy to clipboard</button>
+        </div>
+        <div x-show="showNotification" x-text="notification" class="p-2 bg-blue-500 text-white rounded text-sm"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform scale-90"
+            x-transition:enter-end="opacity-100 transform scale-100"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 transform scale-100"
+            x-transition:leave-end="opacity-0 transform scale-90"></div>
+    </div>
+    <footer class="mt-10 text-center absolute bottom-0 w-full">
+        <p>&copy; {{current_year}} <a href="https://devops.com.bd" target="_blank" rel="noopener noreferrer"
+                class="text-green-600">DevOps</a> &
+            <a href="https://github.com/SHSharkar" target="_blank" rel="noopener noreferrer" class="text-indigo-600">Md.
+                Sazzad Hossain Sharkar</a>
+        </p>
+    </footer>
+    <script>
+        function app() {
+            return {
+                input: '',
+                separator: '-',
+                caseType: 'lower',
+                showNotification: false,
+                notification: '',
+                get isCopyDisabled() {
+                    return !this.input || !this.customSlugify(this.input);
+                },
+                customSlugify(input) {
+                    let cleanStr = input.replace(/[^a-zA-Z0-9\s]/g, this.separator);
+                    const options = {
+                        replacement: this.separator,
+                        remove: null,
+                        lower: this.caseType === 'lower'
+                    };
+                    return slugify(cleanStr, options);
+                },
+                copyToClipboard(text) {
+                    if (!text) return;
+                    navigator.clipboard.writeText(text).then(() => {
+                        this.notification = 'Copied to clipboard!';
+                        this.showNotification = true;
+                        setTimeout(() => this.showNotification = false, 1000);
+                    }).catch(() => {
+                        this.notification = 'Failed to copy!';
+                        this.showNotification = true;
+                        setTimeout(() => this.showNotification = false, 1000);
+                    });
+                }
+            }
+        }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const footer = document.querySelector('footer p');
+            const year = new Date().getFullYear();
+            footer.innerHTML = footer.innerHTML.replace('{{current_year}}', year);
+        });
+    </script>
+</body>
+
+</html>
